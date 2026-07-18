@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroSentinel | Mission Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <div class="app-shell">
+    <header class="top-header">
+      <a class="brand" href="#" aria-label="AeroSentinel home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Aero<span>Sentinel</span></span>
+      </a>
+
+      <div class="mission-status">
+        <div class="status-item status-badge"><span class="pulse"></span><span>Flight Status</span></div>
+        <div class="status-item"><span class="status-label">Flight Phase</span><span class="status-value">Awaiting data</span></div>
+        <div class="status-item"><span class="status-label">Mission Timer</span><span class="status-value mono">--:--:--</span></div>
+        <div class="status-item"><span class="status-label">System Health</span><span class="status-value">Pending</span></div>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="card aircraft-card">
+        <div class="card-heading">
+          <div><p class="eyebrow">Platform</p><h1>Aircraft Overview</h1></div>
+          <span class="card-tag">LIVE FEED</span>
+        </div>
+
+        <div class="aircraft-stage">
+          <div class="radar-ring ring-one"></div>
+          <div class="radar-ring ring-two"></div>
+          <div class="radar-ring ring-three"></div>
+          <svg class="aircraft" viewBox="0 0 360 170" aria-label="Aircraft silhouette placeholder" role="img">
+            <path d="M178 15c7 0 11 4 12 11l8 55 128 30c12 3 17 10 16 17-1 7-8 10-18 9l-134-18-6 36 34 17c6 3 8 7 6 11-2 4-7 5-13 2l-37-14-37 14c-6 3-11 2-13-2-2-4 0-8 6-11l34-17-6-36-134 18c-10 1-17-2-18-9-1-7 4-14 16-17l128-30 8-55c1-7 5-11 12-11h10Z" />
+          </svg>
+          <span class="silhouette-label">Aircraft visualization pending</span>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric"><span>Altitude</span><strong>—</strong><small>Awaiting telemetry</small></div>
+          <div class="metric"><span>Airspeed</span><strong>—</strong><small>Awaiting telemetry</small></div>
+          <div class="metric"><span>Pitch</span><strong>—</strong><small>Awaiting telemetry</small></div>
+          <div class="metric"><span>Roll</span><strong>—</strong><small>Awaiting telemetry</small></div>
+        </div>
+      </section>
+
+      <section class="card telemetry-card">
+        <div class="card-heading">
+          <div><p class="eyebrow">Data stream</p><h2>Live Telemetry</h2></div>
+          <span class="signal-icon" aria-hidden="true"></span>
+        </div>
+        <div class="chart-placeholders">
+          <div class="chart-placeholder"><span>Telemetry chart placeholder</span><div class="chart-grid"></div></div>
+          <div class="chart-placeholder"><span>Telemetry chart placeholder</span><div class="chart-grid"></div></div>
+        </div>
+      </section>
+
+      <section class="card faults-card">
+        <div class="card-heading">
+          <div><p class="eyebrow">System monitoring</p><h2>Active Faults</h2></div>
+          <span class="notification-count">0</span>
+        </div>
+        <div class="empty-state">
+          <div class="empty-icon">◇</div>
+          <strong>No Active Faults</strong>
+          <p>Fault monitoring will appear here.</p>
+        </div>
+      </section>
+
+      <section class="card ai-card">
+        <div class="card-heading">
+          <div><p class="eyebrow">Decision support</p><h2>AI Ground Control</h2></div>
+          <span class="ai-badge">AI</span>
+        </div>
+        <div class="recommendation">
+          <span class="recommendation-icon">✦</span>
+          <div>
+            <span class="placeholder-label">Recovery recommendation</span>
+            <p>Awaiting flight context to generate guidance.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card communication-card">
+        <div class="card-heading">
+          <div><p class="eyebrow">Command channel</p><h2>Ground-to-Pilot Communication</h2></div>
+          <span class="connection-state">Offline</span>
+        </div>
+        <div class="log-area" tabindex="0"><p>Communication log is empty.</p></div>
+      </section>
+
+      <section class="card timeline-card">
+        <div class="card-heading"><div><p class="eyebrow">Operation sequence</p><h2>Mission Timeline</h2></div></div>
+        <div class="timeline-empty"><span></span><p>Timeline events will appear here.</p></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
