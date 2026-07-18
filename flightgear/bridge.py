@@ -1,113 +1,104 @@
-from __future__ import annotations
+
 
 import socket
+import time
+import logging
 import threading
-from typing import Any
+
+log = logging.getLogger(__name__)
 
 
 class FlightGearBridge:
-    def __init__(
-        self,
-        host: str = "127.0.0.1",
-        port: int = 5401,
-        *,
-        timeout: float | None = 5.0,
-    ) -> None:
+ 
+    
+    def __init__(self, host="127.0.0.1", port=5401):
         self.host = host
         self.port = port
-        self.timeout = timeout
-        self._socket: socket.socket | None = None
-        self._buffer = b""
-        self._lock = threading.RLock()
-
-    def connect(self) -> None:
-        with self._lock:
-            self.disconnect()
+        self.sock = None
+        self.connected = False
+        self._lock = threading.Lock()
+        self._connect()
+    
+    def _connect(self):
+        
+        try:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.connect((self.host, self.port))
+            self.sock.settimeout(0.5)
+            # Read banner
             try:
-                self._socket = socket.create_connection(
-                    (self.host, self.port), timeout=self.timeout
-                )
-                self._socket.settimeout(self.timeout)
+                self.sock.recv(4096)
+            except:
+                pass
+            self.connected = True
+            log.info(f" FlightGear connected at {self.host}:{self.port}")
+        except Exception as e:
+            log.error(f" FlightGear connection failed: {e}")
+            self.connected = False
+    
+    def get_property(self, prop_path):
+        
+        if not self.connected:
+            return 0.0
+        
+        with self._lock:
+            try:
+                cmd = f"get {prop_path}\r\n"
+                self.sock.sendall(cmd.encode('ascii'))
+                
+                response = self.sock.recv(1024).decode('ascii').strip()
+                # Parse response like: "/controls/flight/elevator = '0.5' (double)"
+                if '=' in response:
+                    value_str = response.split('=')[1].strip().split("'")[1]
+                    return float(value_str)
+                return 0.0
+            except Exception as e:
+                log.warning(f"Get property {prop_path} failed: {e}")
+                return 0.0
+    
+    def set_property(self, prop_path, value):
+       
+        if not self.connected:
+            return False
+        
+        with self._lock:
+            try:
+                cmd = f"set {prop_path} {value:.6f}\r\n"
+                self.sock.sendall(cmd.encode('ascii'))
+                # Read response
                 try:
-                    self._read_response()  # Ignore FlightGear welcome banner
-                except Exception:
+                    self.sock.recv(1024)
+                except:
                     pass
-            except OSError as error:
-                self.disconnect()
-                raise ConnectionError(
-                    f"Unable to connect to FlightGear at {self.host}:{self.port}"
-                ) from error
+                return True
+            except Exception as e:
+                log.warning(f"Set property {prop_path} failed: {e}")
+                return False
+    
+    def read_state(self):
+        return {
+            "raw_stick": self.get_property("/controls/flight/elevator"),
+            "raw_throttle": self.get_property("/controls/engines/engine[0]/throttle"),
 
-    def disconnect(self) -> None:
-        with self._lock:
-            if self._socket is not None:
-                try:
-                    self._socket.close()
-                finally:
-                    self._socket = None
-                    self._buffer = b""
+            "altitude_ft": self.get_property("/position/altitude-ft"),
+            "airspeed_kts": self.get_property("/velocities/airspeed-kt"),
+            "vertical_speed_fpm": self.get_property("/velocities/vertical-speed-fps") * 60,
+            "heading_deg": self.get_property("/orientation/heading-deg"),
+            "pitch_deg": self.get_property("/orientation/pitch-deg"),
+            "roll_deg": self.get_property("/orientation/roll-deg"),
 
-    def get_property(self, path: str) -> float | int:
-        with self._lock:
-            self._send_command(f"get {path}")
-            return self._parse_property_response(self._read_response())
-
-    def set_property(self, path: str, value: Any) -> None:
-        with self._lock:
-            self._send_command(f"set {path} {self._format_value(value)}")
-
-        try:
-            self._read_response()
-        except Exception:
-            pass
-
-    def _send_command(self, command: str) -> None:
-        if self._socket is None:
-            raise ConnectionError("FlightGear bridge is not connected")
-
-        try:
-            self._socket.sendall(f"{command}\r\n".encode("utf-8"))
-        except OSError as error:
-            self.disconnect()
-            raise ConnectionError("FlightGear connection was lost") from error
-
-    def _read_response(self) -> str:
-        if self._socket is None:
-            raise ConnectionError("FlightGear bridge is not connected")
-
-        try:
-            while b"\n" not in self._buffer:
-                data = self._socket.recv(4096)
-                if not data:
-                    raise ConnectionError("FlightGear connection was closed")
-                self._buffer += data
-        except OSError as error:
-            self.disconnect()
-            raise ConnectionError("FlightGear connection was lost") from error
-
-        response, self._buffer = self._buffer.split(b"\n", 1)
-        return response.decode("utf-8").strip()
-
-    @staticmethod
-    def _format_value(value: Any) -> str:
-        if isinstance(value, bool):
-            return "true" if value else "false"
-        return str(value)
-
-    @staticmethod
-    def _parse_property_response(response: str) -> float | int:
-        try:
-            value = response.split("=", 1)[1].strip().split(" ", 1)[0]
-        except (IndexError, ValueError):
-            raise ValueError(f"Invalid FlightGear property response: {response!r}") from None
-
-        value = value.strip("'")
-        try:
-            return int(value)
-        except ValueError:
-            try:
-                return float(value)
-            except ValueError:
-                raise ValueError(
-                    f"FlightGear property value is not numeric: {value!r}"
-                ) from None
+            "engine_n1": self.get_property("/engines/engine[0]/n1"),
+            "engine_n2": self.get_property("/engines/engine[0]/n2"),
+        }
+    
+    def write_safe_commands(self, safe_stick, safe_throttle):
+       
+        # Write to FCS command properties (these drive the actual controls)
+        self.set_property("/fdm/jsbsim/fcs/elevator-cmd-norm", safe_stick)
+        self.set_property("/fdm/jsbsim/fcs/throttle-cmd-norm[0]", safe_throttle)
+        self.set_property("/fdm/jsbsim/fcs/throttle-cmd-norm[1]", safe_throttle)
+    
+    def close(self):
+        if self.sock:
+            self.sock.close()
+        log.info("FlightGear bridge closed")
