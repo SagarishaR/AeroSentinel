@@ -294,7 +294,7 @@ AeroSentinel/
 
 ## 📄 License
 
-*(Add your chosen license here — e.g. MIT — required if this repo is public, per Build Week submission rules.)*
+This project is licensed under the MIT License.
 
 ---
 
