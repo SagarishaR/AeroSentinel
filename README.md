@@ -141,12 +141,12 @@ The main dashboard provides a centralized view of aircraft telemetry, mission st
 
 ---
 
-## 2️⃣ Live Aircraft Telemetry
+## 2️⃣ FlightGear Simulation Environment
 
-Real-time telemetry is streamed from FlightGear and visualized through interactive widgets, allowing operators to continuously monitor critical flight parameters.
+FlightGear serves as the aircraft simulation environment for AeroSentinel. It generates realistic flight telemetry, allowing the system to monitor aircraft behavior, process live sensor data and evaluate the decision support workflow under simulated flight scenarios.
 
 <p align="center">
-  <img src="Screenshots/Faults.png" width="100%">
+  <img src="Screenshots/Simulator.png" width="100%">
 </p>
 
 ---
@@ -176,7 +176,7 @@ The Decision Support Engine generates operational recovery guidance based on the
 Every important mission event is recorded in the mission timeline while communication logs provide a chronological operational history for the current flight.
 
 <p align="center">
-  <img src="screenshots/timeline.png" width="100%">
+  <img src="Screenshots/Timeline.png" width="100%">
 </p>
 
 ---
