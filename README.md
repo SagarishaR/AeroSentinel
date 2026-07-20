@@ -1,15 +1,16 @@
+<div align="center">
 # ✈️ AeroSentinel — Ground Control Decision Support System
 
 **Built for OpenAI Build Week**
 <br/>
-
+![OpenAI Codex](https://img.shields.io/badge/Built%20with-OpenAI%20Codex-6F42C1?style=for-the-badge&logo=openai&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge\&logo=python\&logoColor=white)
 ![FlightGear](https://img.shields.io/badge/FlightGear-Simulator-blue?style=for-the-badge)
 ![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge\&logo=flask\&logoColor=white)
 ![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=for-the-badge\&logo=socketdotio\&logoColor=white)
 ![Kalman Filter](https://img.shields.io/badge/Kalman_Filter-Anomaly_Detection-green?style=for-the-badge)
 ![CUSUM](https://img.shields.io/badge/CUSUM-Drift_Detection-orange?style=for-the-badge)
-![OpenAI Codex](https://img.shields.io/badge/Built%20with-OpenAI%20Codex-6F42C1?style=for-the-badge&logo=openai&logoColor=white)
+
 
 </div>
 
