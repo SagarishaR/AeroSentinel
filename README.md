@@ -2,8 +2,10 @@
 
 # ✈️ AeroSentinel — Ground Control Decision Support System
 
-Built for OpenAI Build Week**
+### Built for OpenAI Build Week
+
 <br/>
+
 ![OpenAI Codex](https://img.shields.io/badge/Built%20with-OpenAI%20Codex-6F42C1?style=for-the-badge&logo=openai&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge\&logo=python\&logoColor=white)
 ![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=for-the-badge\&logo=socketdotio\&logoColor=white)
@@ -73,11 +75,11 @@ AeroSentinel monitors for **six** aircraft fault conditions, each mapped to a sp
 
 Each fault, when detected, produces:
 - An entry in the **Active Faults** panel, with live-updating duration
-- A matching entry in the **AI Ground Control** recommendation panel (highest-severity, longest-active fault takes priority when multiple are active)
+- A matching entry in the **Ground Control** recommendation panel (highest-severity, longest-active fault takes priority when multiple are active)
 - A timestamped **STARTED** event in the Mission Timeline and Communication Log
 - Follow-up **RECOVERING**, **ESCALATING**, or **RESOLVED** events as the situation develops, each with elapsed duration
 
-### A note on detection design (real-world honesty)
+### A note on detection design 
 
 Two specific engineering decisions were made after finding real false positives during testing, and are worth knowing:
 
@@ -311,4 +313,3 @@ This project is licensed under the MIT License.
 
 ---
 
-*Built for OpenAI Build Week. GPT-5.6, via Codex, assisted development.*
