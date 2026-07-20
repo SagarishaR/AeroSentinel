@@ -125,6 +125,62 @@ Live browser dashboard      — telemetry, faults, recommendations,
 
 ---
 
+# 📸 Project Walkthrough
+
+The following screenshots demonstrate the complete AeroSentinel workflow, from normal flight monitoring to fault detection and operational decision support.
+
+---
+
+## 1️⃣ Mission Control Dashboard
+
+The main dashboard provides a centralized view of aircraft telemetry, mission status, system health, communication logs, and operational decision support.
+
+<p align="center">
+  <img src="Screenshots/Dashboard.png" width="100%">
+</p>
+
+---
+
+## 2️⃣ Live Aircraft Telemetry
+
+Real-time telemetry is streamed from FlightGear and visualized through interactive widgets, allowing operators to continuously monitor critical flight parameters.
+
+<p align="center">
+  <img src="Screenshots/Faults.png" width="100%">
+</p>
+
+---
+
+## 3️⃣ Fault Detection
+
+When abnormal aircraft behavior is detected, AeroSentinel immediately classifies the fault, highlights its severity, and updates the operator dashboard.
+
+<p align="center">
+  <img src="Screenshots/Faults.png" width="100%">
+</p>
+
+---
+
+## 4️⃣ Recovery Recommendation
+
+The Decision Support Engine generates operational recovery guidance based on the detected fault, enabling ground operators to respond quickly and consistently.
+
+<p align="center">
+  <img src="Screenshots/Fg_Bridge2.png" width="100%">
+</p>
+
+---
+
+## 5️⃣ Mission Timeline & Communication
+
+Every important mission event is recorded in the mission timeline while communication logs provide a chronological operational history for the current flight.
+
+<p align="center">
+  <img src="screenshots/timeline.png" width="100%">
+</p>
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Python 3.x**, **Flask**, **Flask-SocketIO** (threading async mode)
