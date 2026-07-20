@@ -1,5 +1,5 @@
 <div align="center">
-# ✈️ AeroSentinel — Ground Control Decision Support System
+✈️ AeroSentinel — Ground Control Decision Support System
 
 **Built for OpenAI Build Week**
 <br/>
