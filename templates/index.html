@@ -21,10 +21,22 @@
       </a>
 
       <div class="mission-status">
-        <div class="status-item status-badge"><span class="pulse"></span><span>Flight Status</span></div>
-        <div class="status-item"><span class="status-label">Flight Phase</span><span class="status-value">Awaiting data</span></div>
-        <div class="status-item"><span class="status-label">Mission Timer</span><span class="status-value mono">--:--:--</span></div>
-        <div class="status-item"><span class="status-label">System Health</span><span class="status-value">Pending</span></div>
+        <div class="status-item status-badge"><span class="pulse" id="conn-pulse"></span><span id="conn-text">Connecting</span></div>
+        <div class="status-item"><span class="status-label">Flight Phase</span><span class="status-value" id="flight-phase">Awaiting data</span></div>
+        <div class="status-item"><span class="status-label">Mission Timer</span><span class="status-value mono" id="mission-timer">--:--:--</span></div>
+
+        <div class="status-item health-gauge-wrap">
+          <svg width="34" height="34" viewBox="0 0 34 34" style="transform:rotate(-90deg); flex-shrink:0;">
+            <circle cx="17" cy="17" r="14" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"></circle>
+            <circle id="health-ring" cx="17" cy="17" r="14" fill="none" stroke="var(--success)"
+              stroke-width="4" stroke-linecap="round" stroke-dasharray="87.96" stroke-dashoffset="0"
+              style="transition: stroke-dashoffset 0.6s ease, stroke 0.6s ease;"></circle>
+          </svg>
+          <div>
+            <span class="status-label">System Health</span><br>
+            <span class="status-value" id="system-health">Pending</span>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -32,7 +44,7 @@
       <section class="card aircraft-card">
         <div class="card-heading">
           <div><p class="eyebrow">Platform</p><h1>Aircraft Overview</h1></div>
-          <span class="card-tag">LIVE FEED</span>
+          <span class="card-tag" id="feed-tag">LIVE FEED</span>
         </div>
 
         <div class="aircraft-stage">
@@ -42,14 +54,14 @@
           <svg class="aircraft" viewBox="0 0 360 170" aria-label="Aircraft silhouette placeholder" role="img">
             <path d="M178 15c7 0 11 4 12 11l8 55 128 30c12 3 17 10 16 17-1 7-8 10-18 9l-134-18-6 36 34 17c6 3 8 7 6 11-2 4-7 5-13 2l-37-14-37 14c-6 3-11 2-13-2-2-4 0-8 6-11l34-17-6-36-134 18c-10 1-17-2-18-9-1-7 4-14 16-17l128-30 8-55c1-7 5-11 12-11h10Z" />
           </svg>
-          <span class="silhouette-label">Aircraft visualization pending</span>
+          <span class="silhouette-label" id="silhouette-label">Aircraft visualization pending</span>
         </div>
 
         <div class="metrics-grid">
-          <div class="metric"><span>Altitude</span><strong>—</strong><small>Awaiting telemetry</small></div>
-          <div class="metric"><span>Airspeed</span><strong>—</strong><small>Awaiting telemetry</small></div>
-          <div class="metric"><span>Pitch</span><strong>—</strong><small>Awaiting telemetry</small></div>
-          <div class="metric"><span>Roll</span><strong>—</strong><small>Awaiting telemetry</small></div>
+          <div class="metric"><span>Altitude</span><strong id="metric-altitude">—</strong><small id="metric-altitude-unit">Awaiting telemetry</small></div>
+          <div class="metric"><span>Airspeed</span><strong id="metric-airspeed">—</strong><small id="metric-airspeed-unit">Awaiting telemetry</small></div>
+          <div class="metric"><span>Pitch</span><strong id="metric-pitch">—</strong><small id="metric-pitch-unit">Awaiting telemetry</small></div>
+          <div class="metric"><span>Roll</span><strong id="metric-roll">—</strong><small id="metric-roll-unit">Awaiting telemetry</small></div>
         </div>
       </section>
 
@@ -59,21 +71,48 @@
           <span class="signal-icon" aria-hidden="true"></span>
         </div>
         <div class="chart-placeholders">
-          <div class="chart-placeholder"><span>Telemetry chart placeholder</span><div class="chart-grid"></div></div>
-          <div class="chart-placeholder"><span>Telemetry chart placeholder</span><div class="chart-grid"></div></div>
+          <div class="chart-placeholder">
+            <span id="telemetry-raw-1">Vertical Speed</span>
+            <svg class="sparkline" id="chart-vspeed" viewBox="0 0 300 80" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="vspeedGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path id="vspeedFill" fill="url(#vspeedGradient)" stroke="none"></path>
+              <path id="vspeedLine" fill="none" stroke="var(--accent)" stroke-width="2"></path>
+            </svg>
+          </div>
+
+          <div class="chart-placeholder">
+            <span id="telemetry-raw-2">Engine N1 / N2</span>
+            <svg class="sparkline" id="chart-engine" viewBox="0 0 300 80" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="n1Gradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path id="n1Fill" fill="url(#n1Gradient)" stroke="none"></path>
+              <path id="n1Line" fill="none" stroke="var(--accent)" stroke-width="2"></path>
+              <path id="n2Line" fill="none" stroke="var(--success)" stroke-width="2" stroke-dasharray="4 3"></path>
+            </svg>
+          </div>
         </div>
       </section>
 
       <section class="card faults-card">
         <div class="card-heading">
           <div><p class="eyebrow">System monitoring</p><h2>Active Faults</h2></div>
-          <span class="notification-count">0</span>
+          <span class="notification-count" id="faults-count">0</span>
         </div>
-        <div class="empty-state">
+        <div class="empty-state" id="faults-empty">
           <div class="empty-icon">◇</div>
           <strong>No Active Faults</strong>
           <p>Fault monitoring will appear here.</p>
         </div>
+        <div id="faults-list" style="display:none;"></div>
       </section>
 
       <section class="card ai-card">
@@ -85,7 +124,7 @@
           <span class="recommendation-icon">✦</span>
           <div>
             <span class="placeholder-label">Recovery recommendation</span>
-            <p>Awaiting flight context to generate guidance.</p>
+            <p id="ai-recommendation">Awaiting flight context to generate guidance.</p>
           </div>
         </div>
       </section>
@@ -93,18 +132,20 @@
       <section class="card communication-card">
         <div class="card-heading">
           <div><p class="eyebrow">Command channel</p><h2>Ground-to-Pilot Communication</h2></div>
-          <span class="connection-state">Offline</span>
+          <span class="connection-state" id="comm-state">Offline</span>
         </div>
-        <div class="log-area" tabindex="0"><p>Communication log is empty.</p></div>
+        <div class="log-area" id="comm-log" tabindex="0"><p>Communication log is empty.</p></div>
       </section>
 
       <section class="card timeline-card">
         <div class="card-heading"><div><p class="eyebrow">Operation sequence</p><h2>Mission Timeline</h2></div></div>
-        <div class="timeline-empty"><span></span><p>Timeline events will appear here.</p></div>
+        <div class="timeline-empty" id="timeline-container"><span></span><p>Timeline events will appear here.</p></div>
       </section>
     </main>
   </div>
 
+  <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
 </body>
 </html>

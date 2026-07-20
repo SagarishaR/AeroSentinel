@@ -57,9 +57,7 @@ def register_socket_events(socketio: SocketIO):
                 )
 
             except Exception:
-                # Without this, an exception here silently kills the
-                # background thread and the dashboard hangs on "Connecting"
-                # forever with no error shown anywhere in the browser.
+               
                 log.error("Telemetry stream loop crashed:\n%s", traceback.format_exc())
 
             socketio.sleep(1)

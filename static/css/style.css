@@ -330,7 +330,7 @@ h1 { font-size: 20px; }
 
 .chart-placeholder {
   position: relative;
-  height: 124px;
+  height: 170px;
   padding: 13px;
   overflow: hidden;
   border: 1px dashed rgba(111, 190, 244, .2);
@@ -345,6 +345,12 @@ h1 { font-size: 20px; }
   background:
     repeating-linear-gradient(0deg, transparent 0 23px, rgba(115, 189, 240, .075) 24px),
     repeating-linear-gradient(90deg, transparent 0 40px, rgba(115, 189, 240, .06) 41px);
+}
+
+.sparkline {
+  width: 100%;
+  height: 90px;
+  margin-top: 10px;
 }
 
 .empty-state {
@@ -420,6 +426,44 @@ h1 { font-size: 20px; }
 
 .timeline-empty p { margin: 0; }
 
+/* ---------------------------------------------------------
+   Phase 10.5 additions: fault-row flash, health gauge, pulse
+--------------------------------------------------------- */
+
+.fault-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.fault-row-flash {
+  animation: faultFlash 0.5s ease-out;
+}
+
+@keyframes faultFlash {
+  0%   { box-shadow: 0 0 0 0 rgba(94, 197, 255, 0.55); border-color: rgba(94, 197, 255, 0.55); background: rgba(94, 197, 255, 0.06); }
+  100% { box-shadow: 0 0 0 10px rgba(94, 197, 255, 0); border-color: transparent; background: transparent; }
+}
+
+.pulse-ring {
+  animation: ringPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes ringPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+.health-gauge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 @media (max-width: 1080px) {
   .dashboard { grid-template-columns: 1fr 1fr; }
   .aircraft-card { grid-row: span 1; }
@@ -456,5 +500,5 @@ h1 { font-size: 20px; }
   .card { padding: 18px; }
   .aircraft-stage { height: 230px; }
   .chart-placeholders { grid-template-columns: 1fr; }
-  .chart-placeholder { height: 100px; }
+  .chart-placeholder { height: 140px; }
 }

@@ -38,21 +38,112 @@ function setConnectionUI(isConnected) {
   }
 }
 
+const SPARKLINE_LENGTH = 30;
+const sparklineData = { vspeed: [], n1: [], n2: [] };
+
+function pushSparklinePoint(key, value) {
+  const arr = sparklineData[key];
+  arr.push(value);
+  if (arr.length > SPARKLINE_LENGTH) arr.shift();
+}
+
+function buildSparklinePath(values, width = 300, height = 80, padding = 6) {
+  if (values.length < 2) return { line: "", fill: "" };
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const stepX = (width - padding * 2) / (values.length - 1);
+
+  const points = values.map((v, i) => {
+    const x = padding + i * stepX;
+    const y = height - padding - ((v - min) / range) * (height - padding * 2);
+    return [x, y];
+  });
+
+  const line = points.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(" ");
+  const fill = `${line} L${points[points.length - 1][0]},${height} L${points[0][0]},${height} Z`;
+  return { line, fill };
+}
+
+function renderSparkline(lineId, values, fillId = null) {
+  const { line, fill } = buildSparklinePath(values);
+  const lineEl = document.getElementById(lineId);
+  if (lineEl) lineEl.setAttribute("d", line);
+  if (fillId) {
+    const fillEl = document.getElementById(fillId);
+    if (fillEl) fillEl.setAttribute("d", fill);
+  }
+}
+
+function updateHealthGauge(statusText) {
+  const ring = el("health-ring");
+  if (!ring) return;
+  const circumference = 87.96;
+  let fraction = 1;
+  let color = "var(--success)";
+  let pulse = false;
+
+  if (statusText === "Warning") {
+    fraction = 0.66;
+    color = "#ffcf7a";
+  } else if (statusText === "Critical") {
+    fraction = 1;
+    color = "#ff8a8a";
+    pulse = true;
+  } else {
+    fraction = 1;
+    color = "var(--success)";
+  }
+
+  ring.style.stroke = color;
+  ring.style.strokeDashoffset = circumference * (1 - fraction);
+  ring.classList.toggle("pulse-ring", pulse);
+}
+
+const metricAnimState = {};
+
+function animateMetric(elId, newValue, decimals = 0, suffix = "") {
+  const target = document.getElementById(elId);
+  if (!target) return;
+  const start = metricAnimState[elId] ?? newValue;
+  metricAnimState[elId] = newValue;
+
+  const end = newValue;
+  const duration = 400;
+  const startTime = performance.now();
+
+  function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = start + (end - start) * eased;
+    target.textContent = `${current.toFixed(decimals)}${suffix}`;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 function renderTelemetry(telemetry) {
-  el("metric-altitude").textContent = `${Math.round(telemetry.altitude_ft ?? 0)}`;
+  animateMetric("metric-altitude", Math.round(telemetry.altitude_ft ?? 0), 0);
   el("metric-altitude-unit").textContent = "ft MSL";
 
-  el("metric-airspeed").textContent = `${Math.round(telemetry.airspeed_kts ?? 0)}`;
+  animateMetric("metric-airspeed", Math.round(telemetry.airspeed_kts ?? 0), 0);
   el("metric-airspeed-unit").textContent = "kts";
 
-  el("metric-pitch").textContent = `${(telemetry.pitch_deg ?? 0).toFixed(1)}°`;
+  animateMetric("metric-pitch", telemetry.pitch_deg ?? 0, 1, "°");
   el("metric-pitch-unit").textContent = "pitch";
 
-  el("metric-roll").textContent = `${(telemetry.roll_deg ?? 0).toFixed(1)}°`;
+  animateMetric("metric-roll", telemetry.roll_deg ?? 0, 1, "°");
   el("metric-roll-unit").textContent = "roll";
 
+  pushSparklinePoint("vspeed", telemetry.vertical_speed_fpm ?? 0);
+  pushSparklinePoint("n1", telemetry.engine_n1 ?? 0);
+  pushSparklinePoint("n2", telemetry.engine_n2 ?? 0);
+  renderSparkline("vspeedLine", sparklineData.vspeed, "vspeedFill");
+  renderSparkline("n1Line", sparklineData.n1, "n1Fill");
+  renderSparkline("n2Line", sparklineData.n2);
+
   el("telemetry-raw-1").innerHTML =
-    `<span class="pulse" style="width:6px;height:6px;display:inline-block;margin-right:6px;"></span>Heading ${Math.round(telemetry.heading_deg ?? 0)}°  |  V/S ${Math.round(telemetry.vertical_speed_fpm ?? 0)} fpm`;
+    `<span class="pulse" style="width:6px;height:6px;display:inline-block;margin-right:6px;"></span>V/S ${Math.round(telemetry.vertical_speed_fpm ?? 0)} fpm`;
   el("telemetry-raw-2").innerHTML =
     `<span class="pulse" style="width:6px;height:6px;display:inline-block;margin-right:6px;"></span>N1 ${(telemetry.engine_n1 ?? 0).toFixed(1)}%  |  N2 ${(telemetry.engine_n2 ?? 0).toFixed(1)}%`;
 
@@ -60,6 +151,7 @@ function renderTelemetry(telemetry) {
   el("flight-phase").textContent = altitude > 50 ? "Airborne" : "On Ground";
   el("silhouette-label").textContent = `ALT ${Math.round(altitude)} ft  ·  HDG ${Math.round(telemetry.heading_deg ?? 0)}°`;
 }
+
 function renderRecommendation(rec) {
   const text = el("ai-recommendation");
   if (!rec || rec.priority === "NONE") {
@@ -70,6 +162,9 @@ function renderRecommendation(rec) {
   text.textContent = rec.headline;
   text.style.color = rec.priority === "HIGH" ? "#ff8a8a" : "#ffcf7a";
 }
+
+let previousFaultSeverity = {};
+
 function renderFaults(faults, durations) {
   const countBadge = el("faults-count");
   const emptyState = el("faults-empty");
@@ -84,6 +179,8 @@ function renderFaults(faults, durations) {
     listContainer.innerHTML = "";
     health.textContent = "Nominal";
     health.style.color = "var(--success)";
+    updateHealthGauge("Nominal");
+    previousFaultSeverity = {};
     return;
   }
 
@@ -92,24 +189,30 @@ function renderFaults(faults, durations) {
 
   const highFaults = faults.filter((f) => f.severity === "HIGH");
   const sustainedHigh = highFaults.some((f) => (durations?.[f.fault] ?? 0) >= 10);
+  let statusText;
 
   if (sustainedHigh) {
-    health.textContent = "Critical";
+    statusText = "Critical";
     health.style.color = "#ff8a8a";
   } else if (highFaults.length) {
-    health.textContent = "Warning";
+    statusText = "Warning";
     health.style.color = "#ffcf7a";
   } else {
-    health.textContent = "Degraded";
+    statusText = "Degraded";
     health.style.color = "#ffcf7a";
   }
+  health.textContent = statusText;
+  updateHealthGauge(statusText === "Degraded" ? "Warning" : statusText);
 
+  const currentSeverity = {};
   listContainer.innerHTML = faults
     .map((f) => {
+      currentSeverity[f.fault] = f.severity;
+      const changed = previousFaultSeverity[f.fault] !== f.severity;
       const duration = durations?.[f.fault];
       const durationLabel = duration !== undefined ? ` · active ${duration}s` : "";
       return `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);">
+      <div class="fault-row ${changed ? "fault-row-flash" : ""}">
         <span style="font-size:12px;color:var(--text);">${f.fault}</span>
         <span style="font-family:var(--mono);font-size:10px;color:${f.severity === "HIGH" ? "#ff8a8a" : "#ffcf7a"};">
           ${f.severity} · ${f.value}${durationLabel}
@@ -117,7 +220,9 @@ function renderFaults(faults, durations) {
       </div>`;
     })
     .join("");
+  previousFaultSeverity = currentSeverity;
 }
+
 function describeEvent(event) {
   const time = new Date().toLocaleTimeString();
   switch (event.event) {
@@ -134,8 +239,6 @@ function logTimelineEvent(event) {
 
   if (container.querySelector("p")?.textContent === "Timeline events will appear here.") {
     container.innerHTML = "";
-    // Switch from the placeholder's horizontal layout to a vertical,
-    // scrollable list once real events start coming in.
     container.style.display = "flex";
     container.style.flexDirection = "column";
     container.style.gap = "10px";
@@ -151,6 +254,7 @@ function logTimelineEvent(event) {
 
   container.scrollTop = container.scrollHeight;
 }
+
 function logCommEvent(message, skipTimestamp = false) {
   const log = el("comm-log");
   if (log.querySelector("p")?.textContent === "Communication log is empty.") {
@@ -175,8 +279,7 @@ socket.on("telemetry_update", (data) => {
   const telemetry = data.telemetry || {};
   const faults = data.faults || [];
 
-  // telemetry.connected reflects whether the Python backend is actually
-  // talking to FlightGear (as opposed to the browser-to-server socket).
+
   setConnectionUI(telemetry.connected !== false);
 
   if (!firstDataReceived) {
@@ -188,9 +291,13 @@ socket.on("telemetry_update", (data) => {
   renderTelemetry(telemetry);
   renderFaults(faults, data.durations);
   renderRecommendation(data.recommendation);
-  (data.events || []).forEach((event) => {   // ← this block is missing
+
+  (data.events || []).forEach((event) => {
     logTimelineEvent(event);
-    logCommEvent(describeEvent(event),true);
+    logCommEvent(describeEvent(event), true);
   });
-  
+});
+
+socket.on("question_answer", (result) => {
+  logCommEvent(`[Ground Query] ${result.answer}`, true);
 });
