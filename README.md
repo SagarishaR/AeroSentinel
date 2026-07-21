@@ -252,7 +252,7 @@ This drops you into stable, level flight — enough airspeed to clear AeroSentin
 
 ```bash
 # 1. Clone the repository
-git clone <YOUR_REPO_URL_HERE>
+git clone https://github.com/SagarishaR/AeroSentinel
 cd AeroSentinel
 
 # 2. Create and activate a virtual environment (recommended)
